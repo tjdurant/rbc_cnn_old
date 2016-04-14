@@ -136,8 +136,11 @@ def CreateLabelImageArrays(dataframe):
     d['y'] = Y
             
     # (X, Y) -- ((N,3,w,h), label)
-    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April.hkl','w'))
+    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April{}.hkl'.format(hickleCount),'w'))
 
+    return hickleCount
 
 # Get image arrays for test3 dataset
-CreateLabelImageArrays(classes)
+hickleCount = CreateLabelImageArrays(classes)
+
+
