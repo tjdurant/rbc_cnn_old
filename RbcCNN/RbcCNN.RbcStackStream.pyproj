@@ -6,7 +6,7 @@
     <ProjectGuid>619abb39-1c43-4b63-a558-9938abdeeeba</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>HickleCombine.py</StartupFile>
+    <StartupFile>HickleGen.py</StartupFile>
     <SearchPath>..\RbcCNN.CellArrayGen\;.</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -22,9 +22,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="HickleCombine.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="HickleGen.py" />
   </ItemGroup>
   <PropertyGroup>

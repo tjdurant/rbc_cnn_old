@@ -2,18 +2,17 @@ import os
 import numpy as np
 import pandas as pd
 import hickle
-import HickleCombine
+import cv2
+import PIL
+import time
 
 from PIL import Image
 
 # http://stackoverflow.com/questions/15514593/importerror-no-module-named-when-trying-to-run-python-script
-
 import sys
-
 sys.path.append('C:/Anaconda/Lib/site-packages')
 
-import cv2
-import PIL
+start = time.time()
 
 # Set DATA directory
 DATA_DIR = 'C:/Users/thoma/Documents/00GitHub/rbc_cnn/'
@@ -50,9 +49,9 @@ def getData(ind, dataframe, im):
 
 def CreateLabelImageArrays(dataframe):
     
-    # chunking counter
+    # iteration counter
     i = 0
-           
+
     # hickle counter
     hickleCount = 0
 
@@ -84,34 +83,27 @@ def CreateLabelImageArrays(dataframe):
             print e
             continue
 
+        # append getData value to list
         X.append(x)
         Y.append(y)
         IDs.append(n)
+
+        # add 1 to iteration counter
         i += 1
-        i
-        if i > 300:
+
+        # instantiates list to np.arrays
+        if i == 300:
             
             # individual cell byte arrays    
-            X = np.array(X)
+            npX = np.array(X)
 
             # individual cell labels
-            Y = np.array(Y)
+            npY = np.array(Y)
 
             # individual cell associated smear files
-            IDs = np.array(IDs)
+            npIDs = np.array(IDs)
 
-            # create dictionary for arrays
-            d = {}
-            d['X'] = X
-            d['y'] = Y
-            
-            # (X, Y) -- ((N,3,w,h), label)
-            hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April{}.hkl'.format(hickleCount),'w'))
-            
             hickleCount += 1
-
-            i = 0
-            hickleCount
              
             # reset byte array
             X = []
@@ -120,32 +112,56 @@ def CreateLabelImageArrays(dataframe):
             # reset IDs
             IDs = []
 
-    # individual cell byte arrays    
+        elif i >= 600:
+    
+            # Cell Arrays: concatenates lists to np.arrays
+            X = np.array(X)
+            npX = np.concatenate((npX, X))
+
+            # Label Arrays: concatenates lists to np.arrays
+            Y = np.array(Y)
+            npY = np.concatenate((npY, Y))
+
+            # IDs: concatenates lists to np.arrays
+            IDs = np.array(IDs)
+            npIDs = np.concatenate((npIDs, IDs))
+
+            hickleCount += 1
+             
+            # reset byte array
+            X = []
+            # reset label array
+            Y = []
+            # reset IDs
+            IDs = []
+            
+            i = 301
+
+    # Cell Arrays: concatenates lists to np.arrays
     X = np.array(X)
-    
-    # individual cell labels
+    npX = np.concatenate((npX, X))
+
+    # Label Arrays: concatenates lists to np.arrays
     Y = np.array(Y)
-    
-    # individual cell associated smear files
+    npY = np.concatenate((npY, Y))
+
+    # IDs: concatenates lists to np.arrays
     IDs = np.array(IDs)
+    npIDs = np.concatenate((npIDs, IDs))
 
     # create dictionary for arrays
     d = {}
-    d['X'] = X
-    d['y'] = Y
-            
+    d['X'] = npX
+    d['y'] = npY
+    
+    hickleCount += 1
+    
     # (X, Y) -- ((N,3,w,h), label)
-    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April{}.hkl'.format(hickleCount),'w'))
-
-    return hickleCount
-
-# Get image arrays for test3 dataset
-hickleCount = CreateLabelImageArrays(classes)
+    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April.hkl','w'))
 
 
-test = {}
-hickleCount += 1
+# Get image arrays for "classes" dataset
+CreateLabelImageArrays(classes)
 
-for x in range(hickleCount):
-    test["hk{}".format(x)] = hickle.load('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April{}.hkl'.format(x))
-
+end = time.time()
+print (end - start) 
