@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import hickle
-
+import HickleCombine
 
 from PIL import Image
 
@@ -52,8 +52,7 @@ def CreateLabelImageArrays(dataframe):
     
     # chunking counter
     i = 0
-
-                
+           
     # hickle counter
     hickleCount = 0
 
@@ -143,4 +142,10 @@ def CreateLabelImageArrays(dataframe):
 # Get image arrays for test3 dataset
 hickleCount = CreateLabelImageArrays(classes)
 
+
+test = {}
+hickleCount += 1
+
+for x in range(hickleCount):
+    test["hk{}".format(x)] = hickle.load('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April{}.hkl'.format(x))
 
