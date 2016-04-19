@@ -22,7 +22,7 @@ CSV_DIR = DATA_DIR + 'csv/'
 IMG_DIR = 'C:/Users/thoma/Documents/00GitHub/00_LOCAL_ONLY/00RbcCNN_Sln_Images/'
 
 # read in cell labels from Cell Label Tool 
-classes = pd.read_csv(CSV_DIR + 'dataset.csv', index_col=0, parse_dates=True)
+classes = pd.read_csv(DATA_DIR + 'dataset.csv', index_col=0, parse_dates=True)
 
 # get rid of reject cells
 classes = classes[classes.label != 'Reject']
@@ -182,7 +182,7 @@ def create_hickle(dataframe):
 df = csv_to_dataFrame(CSV_DIR)
 
 # Get image arrays for "classes" dataset
-create_hickle(classes)
+create_hickle(df)
 
 end = time.time()
 print (end - start) 
