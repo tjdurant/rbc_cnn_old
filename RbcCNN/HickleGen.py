@@ -16,12 +16,13 @@ start = time.time()
 
 # Set DATA directory
 DATA_DIR = 'C:/Users/thoma/Documents/00GitHub/rbc_cnn/'
+CSV_DIR = DATA_DIR + 'csv/'
 
 # Set IMAGE directory: Keep off of GitHub
 IMG_DIR = 'C:/Users/thoma/Documents/00GitHub/00_LOCAL_ONLY/00RbcCNN_Sln_Images/'
 
 # read in cell labels from Cell Label Tool 
-classes = pd.read_csv(DATA_DIR + 'dataset.csv', index_col=0, parse_dates=True)
+classes = pd.read_csv(CSV_DIR + 'dataset.csv', index_col=0, parse_dates=True)
 
 # get rid of reject cells
 classes = classes[classes.label != 'Reject']
@@ -29,6 +30,22 @@ classes = classes[classes.label != 'Abnormal']
 
 # counts the number of cells in each calss
 print classes['label'].value_counts()
+
+def csv_to_dataFrame(path):
+    
+    # output csv
+    #fout=open(outputFile,"a")
+    i = 0 
+
+    for root, dirs, files in os.walk(path):
+        frame = pd.DataFrame()
+        list_ = []
+        for file_ in files:
+            csv_path = os.path.join(root, file_)
+            df = pd.read_csv(csv_path,index_col=0, header=0)
+            list_.append(df)
+        frame = pd.concat(list_)
+    return frame
 
 # gets byte array from smear image using xywh coordinates 
 def get_cropped_array(ind, dataframe, im):
@@ -72,7 +89,8 @@ def create_hickle(dataframe):
         index = n[0]
 
         # get smear image array      
-        im = cv2.imread(IMG_DIR + dataframe.image[index])
+        x = dataframe.image[index]
+        im = cv2.imread(IMG_DIR + x)
 
         try:
             # pass index, dataframe, and image array to function
@@ -160,8 +178,10 @@ def create_hickle(dataframe):
     hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April.hkl','w'))
 
 
+df = csv_to_dataFrame(CSV_DIR)
+
 # Get image arrays for "classes" dataset
-create_hickle(classes)
+create_hickle(df)
 
 end = time.time()
 print (end - start) 
