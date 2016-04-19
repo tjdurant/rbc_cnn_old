@@ -84,14 +84,15 @@ def create_hickle(dataframe):
         
         # this is the entire index object
         index_obj = dataframe.ix[n[0]]
-        print n
+        
         # n[0] = index
         index = n[0]
-        print index
+        
         # get smear image array      
-        x = dataframe.image[index]
-        im = cv2.imread(IMG_DIR + x)
 
+        im = cv2.imread(IMG_DIR + n[1])
+        im
+        n[1]
         try:
             # pass index, dataframe, and image array to function
             x, y = get_cropped_array(index, dataframe, im)
@@ -181,7 +182,7 @@ def create_hickle(dataframe):
 df = csv_to_dataFrame(CSV_DIR)
 
 # Get image arrays for "classes" dataset
-create_hickle(df)
+create_hickle(classes)
 
 end = time.time()
 print (end - start) 
