@@ -45,6 +45,7 @@ def csv_to_dataFrame(path):
             df = pd.read_csv(csv_path,index_col=0, header=0)
             list_.append(df)
         frame = pd.concat(list_)
+    frame = frame.reset_index(drop=True)
     return frame
 
 # gets byte array from smear image using xywh coordinates 
