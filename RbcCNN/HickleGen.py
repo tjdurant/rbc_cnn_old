@@ -48,6 +48,12 @@ def csv_to_dataFrame(path):
     frame = frame.reset_index(drop=True)
     return frame
 
+
+def parse_dataFrame(df):
+    "remove double labeled cells"
+
+
+
 # gets byte array from smear image using xywh coordinates 
 def get_cropped_array(ind, dataframe, im):
     # im = cv2.imread(IMG_DIR + dataframe.image[ind])
@@ -184,9 +190,13 @@ def create_hickle(dataframe):
     hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April2.hkl','w'))
 
 
+# return df from all csv files in CSV_DIR
 df = csv_to_dataFrame(CSV_DIR)
 
-# Get image arrays for "classes" dataset
+# remove cells with overlapping XY coordinates
+df = parse_dataFrame(df)
+
+# create hickle
 create_hickle(df)
 
 end = time.time()
