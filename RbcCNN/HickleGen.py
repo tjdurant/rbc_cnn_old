@@ -89,8 +89,12 @@ def create_hickle(dataframe):
         index = n[0]
         
         # get smear image array      
-
-        im = cv2.imread(IMG_DIR + n[1])
+        if n[1].endswith('.jpg'):
+            im = cv2.imread(IMG_DIR + n[1])
+        else:
+            im_name = n[1] + '.jpg'
+            im_path = IMG_DIR + im_name
+            im = cv2.imread(im_path)
         im
         n[1]
         try:
