@@ -29,7 +29,7 @@ classes = classes[classes.label != 'Reject']
 classes = classes[classes.label != 'Abnormal']
 
 # counts the number of cells in each calss
-print classes['label'].value_counts()
+#print classes['label'].value_counts()
 
 def csv_to_dataFrame(path):
     
@@ -84,10 +84,10 @@ def create_hickle(dataframe):
         
         # this is the entire index object
         index_obj = dataframe.ix[n[0]]
-        
+        print n
         # n[0] = index
         index = n[0]
-
+        print index
         # get smear image array      
         x = dataframe.image[index]
         im = cv2.imread(IMG_DIR + x)
@@ -175,7 +175,7 @@ def create_hickle(dataframe):
     hickleCount += 1
     
     # (X, Y) -- ((N,3,w,h), label)
-    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April.hkl','w'))
+    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April2.hkl','w'))
 
 
 df = csv_to_dataFrame(CSV_DIR)
