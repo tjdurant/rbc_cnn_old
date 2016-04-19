@@ -6,7 +6,7 @@
     <ProjectGuid>619abb39-1c43-4b63-a558-9938abdeeeba</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>HickleGen.py</StartupFile>
+    <StartupFile>RbcCNN.CsvParser.py</StartupFile>
     <SearchPath>..\RbcCNN.CellArrayGen\;.</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -23,6 +23,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="HickleGen.py" />
+    <Compile Include="RbcCNN.CsvParser.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RbcCNN.Filter.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

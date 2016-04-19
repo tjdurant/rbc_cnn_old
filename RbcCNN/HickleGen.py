@@ -31,7 +31,7 @@ classes = classes[classes.label != 'Abnormal']
 print classes['label'].value_counts()
 
 # gets byte array from smear image using xywh coordinates 
-def getData(ind, dataframe, im):
+def get_cropped_array(ind, dataframe, im):
     # im = cv2.imread(IMG_DIR + dataframe.image[ind])
     df = dataframe.ix[ind]
     label = df.label
@@ -46,8 +46,8 @@ def getData(ind, dataframe, im):
     if croppedCell.shape == (60, 60, 3):
         return croppedCell, label
 
-
-def CreateLabelImageArrays(dataframe):
+    
+def create_hickle(dataframe):
     
     # iteration counter
     i = 0
@@ -76,7 +76,7 @@ def CreateLabelImageArrays(dataframe):
 
         try:
             # pass index, dataframe, and image array to function
-            x, y = getData(index, dataframe, im)
+            x, y = get_cropped_array(index, dataframe, im)
         except Exception, e:
             #type, value, tb = sys.exc_info()
             #traceback.print_exc()
@@ -161,7 +161,7 @@ def CreateLabelImageArrays(dataframe):
 
 
 # Get image arrays for "classes" dataset
-CreateLabelImageArrays(classes)
+create_hickle(classes)
 
 end = time.time()
 print (end - start) 
