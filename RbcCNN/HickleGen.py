@@ -12,7 +12,7 @@ from PIL import Image
 import sys
 sys.path.append('C:/Anaconda/Lib/site-packages')
 
-start = time.time()
+
 
 # Set DATA directory
 DATA_DIR = 'C:/Users/thoma/Documents/00GitHub/rbc_cnn/'
@@ -51,7 +51,44 @@ def csv_to_dataFrame(path):
 
 def parse_dataFrame(df):
     "remove double labeled cells"
+    i = 0
+    for1 = 0
+    for2 = 0
+    missedByY = 0
 
+    for n in range(len(df)):
+        start = time.time()
+
+        cell = df.ix[n]
+        for1 += 1
+        
+        for s in range(len(df)):
+
+            second_cell = df.ix[s]
+            for2 += 1
+            
+            # if annotators are same; ignore
+            if cell.annotator == second_cell.annotator:
+                continue
+            else:
+                # if smear images are not same; ignore
+                if cell.image != second_cell.image:
+                    continue
+
+                # if x is within range of other cell
+                elif cell.x in range(second_cell.x-30, second_cell.x+30):
+                    # and y is within range of other cell
+                    # same annotator, same image, similar coordinates
+                    if cell.y in range(second_cell.y-30, second_cell.y+30):
+                        i +=1
+                        print "{} overlapping cells".format(i)
+                    else:
+                        continue
+                else:
+                    continue
+
+            end = time.time()
+            print (end - start) 
 
 
 # gets byte array from smear image using xywh coordinates 
@@ -199,5 +236,3 @@ df = parse_dataFrame(df)
 # create hickle
 create_hickle(df)
 
-end = time.time()
-print (end - start) 
