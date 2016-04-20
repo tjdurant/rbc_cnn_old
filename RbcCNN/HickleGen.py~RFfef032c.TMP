@@ -48,27 +48,6 @@ def csv_to_dataFrame(path):
     frame = frame.reset_index(drop=True)
     return frame
 
-def overlap_cell_check(df, cell, second_cell):
-    
-    overlap_list = []
-
-    if cell.x in range(second_cell.x-30, second_cell.x+30):
-        if cell.y in range(second_cell.y-30, second_cell.y+30):
-            if cell.image == second_cell.image:
-                if cell.annotator != second_cell.annotator:
-                    overlap_list.append(cell)
-                    overlap_list.append(second_cell)
-                    return overlap_list
-                else:
-                    return None
-            else:
-                return None
-        else:
-            return None
-    else:
-        return None
-
-    return 
 
 def parse_dataFrame(df):
     "remove double labeled cells"
@@ -84,32 +63,36 @@ def parse_dataFrame(df):
 
     for n in range(len(df)):
 
+        # timer for testing
+        start = time.time()
+        # iteration counter for testing
+        for1 += 1
+
         # select one cell to compare to rest of dataset
         cell = df.ix[n]
-        
-        start = n - 30
-        stop = n + 30
+        index = 0
 
-        if 0 > n - 30:
-            start = 0
-        else:
-            start = start
+        # compare cell to at each "second_cell" in df 
+        for x in df['x']:
+            if x in range(cell.x-30,cell.x+30):
+                second_cell = df._ix[index]
+                index += 1
+                for2 += 1
+                # if y is within range of other cell
+                if cell.y in range(second_cell.y-30, second_cell.y+30):
+                    if cell.image == second_cell.image:
+                        if cell.annotator != second_cell.annotator:
+                            i +=1
+                            overlap_list.append(cell)
+                            overlap_list.append(second_cell)
+                            print "{} overlapping cells".format(i)
+                    else:
+                        continue
 
-        if len(df) < stop:
-            stop = len(df)
-        else:
-            stop = stop
-
-        for s in range(start, stop):
-            second_cell = df.ix[s]
-            olc = overlap_cell_check(df, cell, second_cell)
-            if olc != None:
-                overlap_list.append(olc)
-                i += 1
-                print "{} overlapping cells".format(i)
+                else:
+                    continue
             else:
-                continue
-
+                break
             
             
             ## if annotators are same; ignore
@@ -132,7 +115,9 @@ def parse_dataFrame(df):
             #    else:
             #        continue
 
- 
+            end = time.time()
+            print (end - start) 
+
     overlap_df = pd.DataFrame(overlap_list)
     return df, overlap_df
 
