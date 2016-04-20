@@ -57,37 +57,56 @@ def parse_dataFrame(df):
     missedByY = 0
     overlap_list = []
 
-    for n in range(len(df)):
-        start = time.time()
+    # sort df by x value
+    df = df.sort_values(by=['x'], ascending=[True])
+    df = df.reset_index(drop=True)
 
-        cell = df.ix[n]
+    for ix, x in df.iteritems('x'):
+        if x in range(cell.x-30,cell.x+30):
+            print i
+
+    print i
+
+    for n in range(len(df)):
+
+        # timer for testing
+        start = time.time()
+        # iteration counter for testing
         for1 += 1
+
+        # select one cell to compare to rest of dataset
+        cell = df.ix[n]
         
+        x = cell.x
+
         # compare cell to at each "second_cell" in df 
         for s in range(len(df)):
 
             second_cell = df.ix[s]
-            for2 += 1
             
-            # if x is within range of other cell
-            if cell.x in range(second_cell.x-30, second_cell.x+30):
-                # and y is within range of other cell
-                # same annotator, same image, similar coordinates
-                if cell.y in range(second_cell.y-30, second_cell.y+30):
-                    if cell.image == second_cell.image:
-                        if cell.annotator != second_cell.annotator:
-                            i +=1
-                            overlap_list.append(cell)
-                            overlap_list.append(second_cell)
-                            print "{} overlapping cells".format(i)
+            if second_cell.x in range(x-30, x+30):
+                for2 += 1
+                # if x is within range of other cell
+                if cell.x in range(second_cell.x-30, second_cell.x+30):
+                    # and y is within range of other cell
+                    # same annotator, same image, similar coordinates
+                    if cell.y in range(second_cell.y-30, second_cell.y+30):
+                        if cell.image == second_cell.image:
+                            if cell.annotator != second_cell.annotator:
+                                i +=1
+                                overlap_list.append(cell)
+                                overlap_list.append(second_cell)
+                                print "{} overlapping cells".format(i)
+                        else:
+                            continue
                     else:
                         continue
                 else:
                     continue
             else:
-                continue
+                break
             
-            overlap_df = pd.DataFrame(overlap_list)
+            
             ## if annotators are same; ignore
             #if cell.annotator == second_cell.annotator:
             #    continue
@@ -111,7 +130,8 @@ def parse_dataFrame(df):
             end = time.time()
             print (end - start) 
 
-            return df, overlap_df
+    overlap_df = pd.DataFrame(overlap_list)
+    return df, overlap_df
 
 # gets byte array from smear image using xywh coordinates 
 def get_cropped_array(ind, dataframe, im):
