@@ -55,6 +55,7 @@ def parse_dataFrame(df):
     for1 = 0
     for2 = 0
     missedByY = 0
+    overlap_list = []
 
     for n in range(len(df)):
         start = time.time()
@@ -62,34 +63,55 @@ def parse_dataFrame(df):
         cell = df.ix[n]
         for1 += 1
         
+        # compare cell to at each "second_cell" in df 
         for s in range(len(df)):
 
             second_cell = df.ix[s]
             for2 += 1
             
-            # if annotators are same; ignore
-            if cell.annotator == second_cell.annotator:
-                continue
-            else:
-                # if smear images are not same; ignore
-                if cell.image != second_cell.image:
-                    continue
-
-                # if x is within range of other cell
-                elif cell.x in range(second_cell.x-30, second_cell.x+30):
-                    # and y is within range of other cell
-                    # same annotator, same image, similar coordinates
-                    if cell.y in range(second_cell.y-30, second_cell.y+30):
-                        i +=1
-                        print "{} overlapping cells".format(i)
+            # if x is within range of other cell
+            if cell.x in range(second_cell.x-30, second_cell.x+30):
+                # and y is within range of other cell
+                # same annotator, same image, similar coordinates
+                if cell.y in range(second_cell.y-30, second_cell.y+30):
+                    if cell.image == second_cell.image:
+                        if cell.annotator != second_cell.annotator:
+                            i +=1
+                            overlap_list.append(cell)
+                            overlap_list.append(second_cell)
+                            print "{} overlapping cells".format(i)
                     else:
                         continue
                 else:
                     continue
+            else:
+                continue
+            
+            overlap_df = pd.DataFrame(overlap_list)
+            ## if annotators are same; ignore
+            #if cell.annotator == second_cell.annotator:
+            #    continue
+            #else:
+            #    # if smear images are not same; ignore
+            #    if cell.image != second_cell.image:
+            #        continue
+
+            #    # if x is within range of other cell
+            #    elif cell.x in range(second_cell.x-30, second_cell.x+30):
+            #        # and y is within range of other cell
+            #        # same annotator, same image, similar coordinates
+            #        if cell.y in range(second_cell.y-30, second_cell.y+30):
+            #            i +=1
+            #            print "{} overlapping cells".format(i)
+            #        else:
+            #            continue
+            #    else:
+            #        continue
 
             end = time.time()
             print (end - start) 
 
+            return df, overlap_df
 
 # gets byte array from smear image using xywh coordinates 
 def get_cropped_array(ind, dataframe, im):
@@ -108,7 +130,7 @@ def get_cropped_array(ind, dataframe, im):
         return croppedCell, label
 
     
-def create_hickle(dataframe):
+def create_hickle(dataframe, hickle_name):
     
     # iteration counter
     i = 0
@@ -224,15 +246,18 @@ def create_hickle(dataframe):
     hickleCount += 1
     
     # (X, Y) -- ((N,3,w,h), label)
-    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April2.hkl','w'))
+    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/{}.hkl'.format(hickle_name),'w'))
 
 
 # return df from all csv files in CSV_DIR
 df = csv_to_dataFrame(CSV_DIR)
 
 # remove cells with overlapping XY coordinates
-df = parse_dataFrame(df)
+df, overlap_df = parse_dataFrame(df)
 
-# create hickle
-create_hickle(df)
+# create hickle full dataset
+create_hickle(df, "April_420")
+
+# create hickle overlap dataset
+create_hickle(overlap_df, "April_420_overlap")
 
