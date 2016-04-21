@@ -48,10 +48,12 @@ def csv_to_dataFrame(path):
     frame = frame.reset_index(drop=True)
     return frame
 
+
 def overlap_cell_check(df, cell, second_cell):
     
     overlap_list = []
 
+    # absolute < 30 
     if cell.x in range(second_cell.x-30, second_cell.x+30):
         if cell.y in range(second_cell.y-30, second_cell.y+30):
             if cell.image == second_cell.image:
@@ -69,6 +71,7 @@ def overlap_cell_check(df, cell, second_cell):
         return None
 
     return 
+
 
 def parse_dataFrame(df):
     "remove double labeled cells"
@@ -119,6 +122,7 @@ def parse_dataFrame(df):
     overlap_df = pd.DataFrame(overlap_list)
     return df, overlap_df
 
+
 # gets byte array from smear image using xywh coordinates 
 def get_cropped_array(ind, dataframe, im):
     # im = cv2.imread(IMG_DIR + dataframe.image[ind])
@@ -135,7 +139,7 @@ def get_cropped_array(ind, dataframe, im):
     if croppedCell.shape == (60, 60, 3):
         return croppedCell, label
 
-    
+
 def create_hickle(dataframe, hickle_name):
     
     # iteration counter
