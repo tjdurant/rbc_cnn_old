@@ -82,7 +82,10 @@ def parse_dataFrame(df):
     df = df.sort_values(by=['x'], ascending=[True])
     df = df.reset_index(drop=True)
 
-    for n in range(len(df)):
+    for n in range(len(df)-1):
+
+        if n >= len(df):
+            break
 
         # select one cell to compare to rest of dataset
         cell = df.ix[n]
@@ -105,34 +108,14 @@ def parse_dataFrame(df):
             olc = overlap_cell_check(df, cell, second_cell)
             if olc != None:
                 overlap_list.append(olc)
+                df = df.drop(df.index[n])
+                df = df.drop(df.index[s])
+                df = df.reset_index(drop=True)
                 i += 1
                 print "{} overlapping cells".format(i)
             else:
                 continue
 
-            
-            
-            ## if annotators are same; ignore
-            #if cell.annotator == second_cell.annotator:
-            #    continue
-            #else:
-            #    # if smear images are not same; ignore
-            #    if cell.image != second_cell.image:
-            #        continue
-
-            #    # if x is within range of other cell
-            #    elif cell.x in range(second_cell.x-30, second_cell.x+30):
-            #        # and y is within range of other cell
-            #        # same annotator, same image, similar coordinates
-            #        if cell.y in range(second_cell.y-30, second_cell.y+30):
-            #            i +=1
-            #            print "{} overlapping cells".format(i)
-            #        else:
-            #            continue
-            #    else:
-            #        continue
-
- 
     overlap_df = pd.DataFrame(overlap_list)
     return df, overlap_df
 
@@ -279,8 +262,8 @@ df = csv_to_dataFrame(CSV_DIR)
 df, overlap_df = parse_dataFrame(df)
 
 # create hickle full dataset
-create_hickle(df, "April_420")
+create_hickle(df, "April_421")
 
 # create hickle overlap dataset
-create_hickle(overlap_df, "April_420_overlap")
+create_hickle(overlap_df, "April_421_overlap")
 
