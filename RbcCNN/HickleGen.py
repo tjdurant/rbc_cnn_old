@@ -74,53 +74,60 @@ def overlap_cell_check(df, cell, second_cell):
 
 
 def parse_dataFrame(df):
-    "remove double labeled cells"
-    i = 0
-    for1 = 0
-    for2 = 0
-    missedByY = 0
-    overlap_list = []
+    
+    x = np.array(df['x'])
+    y = np.array(df['y'])
+    i = np.array(df['image'])
 
-    # sort df by x value
-    df = df.sort_values(by=['x'], ascending=[True])
-    df = df.reset_index(drop=True)
+    # create linkage table 
+    dx = x[:, np.newaxis] - x
+    dy = y[:, np.newaxis] - y
+    di = (i[:, np.newaxis] != i)*1e9
 
-    for n in range(len(df)-1):
+    # set diagonal of linkage table to large number
+    dx[np.diag_indices(len(dx))] = 1e9
+    dy[np.diag_indices(len(dy))] = 1e9
+    di[np.diag_indices(len(di))] = 1e9
 
-        if n >= len(df):
-            break
+    # get absolute values
+    dx = np.abs(dx)
+    dy = np.abs(dy)
 
-        # select one cell to compare to rest of dataset
-        cell = df.ix[n]
-        
-        start = n - 30
-        stop = n + 30
+    # sum vector of x, y, and image
+    d = dx + dy + di
 
-        if 0 > n - 30:
-            start = 0
-        else:
-            start = start
+    # set variable = to min of 0 for vector summation
+    b = d.min(0)
 
-        if len(df) < stop:
-            stop = len(df)
-        else:
-            stop = stop
+    # create array with zeros of length b 
+    exclude = np.zeros(len(b))
 
-        for s in range(start, stop):
-            second_cell = df.ix[s]
-            olc = overlap_cell_check(df, cell, second_cell)
-            if olc != None:
-                overlap_list.append(olc)
-                df = df.drop(df.index[n])
-                df = df.drop(df.index[s])
-                df = df.reset_index(drop=True)
-                i += 1
-                print "{} overlapping cells".format(i)
-            else:
-                continue
+    # iterate through index of length b 
+    for i in range(len(b)):
+        # if True/anything present at exclude[i]; skip
+        if exclude[i]:
+            continue
+        if b[i] < 30:
+            # add True to index position of exclude if d[i] < 30     
+            exclude[(d[i] < 30).nonzero()] = True
 
-    overlap_df = pd.DataFrame(overlap_list)
-    return df, overlap_df
+    # create overlap frame
+    df_overlap = df[exclude == True]
+    df_overlap = df_overlap.reset_index(drop=True)
+
+    # create non_overlap frame
+    df_nonoverlap = df[exclude == False]
+    df_nonoverlap = df_nonoverlap.reset_index(drop=True)
+
+    # create rick frame
+    df_r = df[df.annotator == 'rick']
+    df_r = df_r.reset_index(drop=True)
+
+    # create tommy frame
+    df_t = df[df.annotator == 'tommy']
+    df_t = df_t.reset_index(drop=True)
+
+    return df_nonoverlap, df_overlap, df_r, df_t
 
 
 # gets byte array from smear image using xywh coordinates 
@@ -240,6 +247,7 @@ def create_hickle(dataframe, hickle_name):
     X = np.array(X)
     npX = np.concatenate((npX, X))
 
+
     # Label Arrays: concatenates lists to np.arrays
     Y = np.array(Y)
     npY = np.concatenate((npY, Y))
@@ -256,18 +264,20 @@ def create_hickle(dataframe, hickle_name):
     hickleCount += 1
     
     # (X, Y) -- ((N,3,w,h), label)
-    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/{}.hkl'.format(hickle_name),'w'))
+    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April_{}.hkl'.format(hickle_name),'w'))
 
 
 # return df from all csv files in CSV_DIR
 df = csv_to_dataFrame(CSV_DIR)
 
-# remove cells with overlapping XY coordinates
-df, overlap_df = parse_dataFrame(df)
+# parse dataframes into appropriate dfs and return to list
+arrays = []
+arrays = parse_dataFrame(df)
 
-# create hickle full dataset
-create_hickle(df, "April_421")
+for frame in arrays:
+    try:
+        create_hickle(frame, str(len(frame)))
+    except Exception, e:
+        print e
 
-# create hickle overlap dataset
-create_hickle(overlap_df, "April_421_overlap")
 
