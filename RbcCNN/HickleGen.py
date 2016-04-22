@@ -110,24 +110,30 @@ def parse_dataFrame(df):
         if b[i] < 30:
             # add True to index position of exclude if d[i] < 30     
             exclude[(d[i] < 30).nonzero()] = True
+    
+    d = {}
 
     # create overlap frame
     df_overlap = df[exclude == True]
     df_overlap = df_overlap.reset_index(drop=True)
+    d['overlap'] = df_overlap
 
     # create non_overlap frame
     df_nonoverlap = df[exclude == False]
     df_nonoverlap = df_nonoverlap.reset_index(drop=True)
+    d['non_overlap'] = df_nonoverlap
 
     # create rick frame
-    df_r = df[df.annotator == 'rick']
+    df_r = df_nonoverlap[df_nonoverlap.annotator == 'rick']
     df_r = df_r.reset_index(drop=True)
+    d['rick'] = df_r
 
     # create tommy frame
-    df_t = df[df.annotator == 'tommy']
+    df_t = df_nonoverlap[df_nonoverlap.annotator == 'tommy']
     df_t = df_t.reset_index(drop=True)
+    d['tommy'] = df_t
 
-    return df_nonoverlap, df_overlap, df_r, df_t
+    return d
 
 
 # gets byte array from smear image using xywh coordinates 
@@ -155,13 +161,10 @@ def create_hickle(dataframe, hickle_name):
     # hickle counter
     hickleCount = 0
 
-    # byte array
     X = []
-    # label array
     Y = []
-    # not sure
     IDs = []
-    
+
     # iterates over image column of dataframe
     for n in dataframe.image.iteritems():
         
@@ -243,26 +246,33 @@ def create_hickle(dataframe, hickle_name):
             
             i = 301
 
+    
     # Cell Arrays: concatenates lists to np.arrays
-    X = np.array(X)
-    npX = np.concatenate((npX, X))
-
+    try:
+        X = np.array(X)
+        npX = np.concatenate((npX, X))
+    except:
+        npX = np.array(X)
 
     # Label Arrays: concatenates lists to np.arrays
-    Y = np.array(Y)
-    npY = np.concatenate((npY, Y))
+    try:
+        Y = np.array(Y)
+        npY = np.concatenate((npY, Y))
+    except:
+        npY = np.array(Y)
 
     # IDs: concatenates lists to np.arrays
-    IDs = np.array(IDs)
-    npIDs = np.concatenate((npIDs, IDs))
+    try:
+        IDs = np.array(IDs)
+        npIDs = np.concatenate((npIDs, IDs))
+    except:
+        npIDs = np.array(IDs)
 
     # create dictionary for arrays
     d = {}
     d['X'] = npX
     d['y'] = npY
-    
-    hickleCount += 1
-    
+
     # (X, Y) -- ((N,3,w,h), label)
     hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April_{}.hkl'.format(hickle_name),'w'))
 
@@ -271,12 +281,12 @@ def create_hickle(dataframe, hickle_name):
 df = csv_to_dataFrame(CSV_DIR)
 
 # parse dataframes into appropriate dfs and return to list
-arrays = []
-arrays = parse_dataFrame(df)
+array_dict = {}
+array_dict = parse_dataFrame(df)
 
-for frame in arrays:
+for key in array_dict:
     try:
-        create_hickle(frame, str(len(frame)))
+        create_hickle(array_dict[key], key)
     except Exception, e:
         print e
 
