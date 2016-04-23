@@ -13,7 +13,6 @@ import sys
 sys.path.append('C:/Anaconda/Lib/site-packages')
 
 
-
 # Set DATA directory
 DATA_DIR = 'C:/Users/thoma/Documents/00GitHub/rbc_cnn/'
 CSV_DIR = DATA_DIR + 'csv/'
@@ -21,15 +20,6 @@ CSV_DIR = DATA_DIR + 'csv/'
 # Set IMAGE directory: Keep off of GitHub
 IMG_DIR = 'C:/Users/thoma/Documents/00GitHub/00_LOCAL_ONLY/00RbcCNN_Sln_Images/'
 
-# read in cell labels from Cell Label Tool 
-classes = pd.read_csv(DATA_DIR + 'dataset.csv', index_col=0, parse_dates=True)
-
-# get rid of reject cells
-classes = classes[classes.label != 'Reject']
-classes = classes[classes.label != 'Abnormal']
-
-# counts the number of cells in each calss
-#print classes['label'].value_counts()
 
 def csv_to_dataFrame(path):
     
@@ -136,7 +126,6 @@ def parse_dataFrame(df):
     return d
 
 
-# gets byte array from smear image using xywh coordinates 
 def get_cropped_array(ind, dataframe, im):
     # im = cv2.imread(IMG_DIR + dataframe.image[ind])
     df = dataframe.ix[ind]
@@ -280,7 +269,7 @@ def create_hickle(dataframe, hickle_name):
 # return df from all csv files in CSV_DIR
 df = csv_to_dataFrame(CSV_DIR)
 
-# parse dataframes into appropriate dfs and return to list
+# parse dataframes into appropriate dfs and return to dict
 array_dict = {}
 array_dict = parse_dataFrame(df)
 
