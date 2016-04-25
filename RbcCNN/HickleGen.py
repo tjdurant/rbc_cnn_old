@@ -63,7 +63,7 @@ def overlap_cell_check(df, cell, second_cell):
     return 
 
 
-def parse_dataFrame(df):
+def parse_dataFrame(df, df_name):
     
     x = np.array(df['x'])
     y = np.array(df['y'])
@@ -97,31 +97,21 @@ def parse_dataFrame(df):
         # if True/anything present at exclude[i]; skip
         if exclude[i]:
             continue
-        if b[i] < 30:
             # add True to index position of exclude if d[i] < 30     
-            exclude[(d[i] < 30).nonzero()] = True
-    
+        exclude[(d[i] < 20).nonzero()] = True
+        
+     
     d = {}
 
     # create overlap frame
     df_overlap = df[exclude == True]
     df_overlap = df_overlap.reset_index(drop=True)
-    d['overlap'] = df_overlap
+    
 
     # create non_overlap frame
     df_nonoverlap = df[exclude == False]
     df_nonoverlap = df_nonoverlap.reset_index(drop=True)
-    d['non_overlap'] = df_nonoverlap
-
-    # create rick frame
-    df_r = df_nonoverlap[df_nonoverlap.annotator == 'rick']
-    df_r = df_r.reset_index(drop=True)
-    d['rick'] = df_r
-
-    # create tommy frame
-    df_t = df_nonoverlap[df_nonoverlap.annotator == 'tommy']
-    df_t = df_t.reset_index(drop=True)
-    d['tommy'] = df_t
+    d['{}_non_overlap'.format(df_name)] = df_nonoverlap
 
     return d
 
@@ -267,11 +257,27 @@ def create_hickle(dataframe, hickle_name):
 
 
 # return df from all csv files in CSV_DIR
+df_dict = {}
 df = csv_to_dataFrame(CSV_DIR)
+df_dict['total'] = df
+df_tommy = df[df.annotator == 'tommy']
+df_dict['tommy'] = df_tommy
+df_rick = df[df.annotator == 'rick']
+df_dict['rick'] = df_rick
+
 
 # parse dataframes into appropriate dfs and return to dict
 array_dict = {}
-array_dict = parse_dataFrame(df)
+
+for key in df_dict:
+    try:
+        d = parse_dataFrame(df_dict[key], key)
+        for k in d:
+            array_dict[k] = d[k]
+    except Exception, e:
+        print e
+
+
 
 for key in array_dict:
     try:
