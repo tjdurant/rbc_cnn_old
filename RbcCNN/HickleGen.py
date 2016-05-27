@@ -20,25 +20,7 @@ CSV_DIR = DATA_DIR + 'csv/'
 # Set IMAGE directory: Keep off of GitHub
 IMG_DIR = 'C:/Users/thoma/Documents/00GitHub/00_LOCAL_ONLY/00RbcCNN_Sln_Images/'
 
-
-def csv_to_dataFrame(path):
-    
-    # output csv
-    #fout=open(outputFile,"a")
-    i = 0 
-
-    for root, dirs, files in os.walk(path):
-        frame = pd.DataFrame()
-        list_ = []
-        for file_ in files:
-            csv_path = os.path.join(root, file_)
-            df = pd.read_csv(csv_path,index_col=0, header=0)
-            list_.append(df)
-        frame = pd.concat(list_)
-    frame = frame.reset_index(drop=True)
-    return frame
-
-
+# currently not being used. 
 def overlap_cell_check(df, cell, second_cell):
     
     overlap_list = []
@@ -63,8 +45,44 @@ def overlap_cell_check(df, cell, second_cell):
     return 
 
 
+def csv_to_dataFrame(path):
+    """
+    reads each csv in path and concatenates into single dataframe using os.walk
+    os.join, and pd.concat. Returns a dataframe which contains all csvs in a given 
+    directory. 
+    """
+    # output csv
+    #fout=open(outputFile,"a")
+    i = 0 
+
+    for root, dirs, files in os.walk(path):
+
+        frame = pd.DataFrame()
+        list_ = []
+
+        # iterates through files in directory 
+        for file_ in files:
+
+            # joins path with each file name
+            csv_path = os.path.join(root, file_)
+
+            # reads each file into df
+            df = pd.read_csv(csv_path,index_col=0, header=0)
+            
+            # appends df to list
+            list_.append(df)
+
+        # concat dfs in list 
+        frame = pd.concat(list_)
+    frame = frame.reset_index(drop=True)
+    return frame
+
+
 def parse_dataFrame(df, df_name):
-    
+    """
+    removes overlapping cells by x, y, and source image. 
+    """
+
     x = np.array(df['x'])
     y = np.array(df['y'])
     i = np.array(df['image'])
@@ -117,6 +135,10 @@ def parse_dataFrame(df, df_name):
 
 
 def get_cropped_array(ind, dataframe, im):
+    """
+    takes each labeled cell from dataframe and gets cropped byte array.
+    """
+
     # im = cv2.imread(IMG_DIR + dataframe.image[ind])
     df = dataframe.ix[ind]
     label = df.label
@@ -133,7 +155,10 @@ def get_cropped_array(ind, dataframe, im):
 
 
 def create_hickle(dataframe, hickle_name):
-    
+    """
+    Creates hickle of cropped byte arrays. 
+    """
+
     # iteration counter
     i = 0
 
@@ -258,6 +283,8 @@ def create_hickle(dataframe, hickle_name):
 
 # return df from all csv files in CSV_DIR
 df_dict = {}
+
+# read all csv cell 
 df = csv_to_dataFrame(CSV_DIR)
 df_dict['total'] = df
 df_tommy = df[df.annotator == 'tommy']
@@ -266,9 +293,10 @@ df_rick = df[df.annotator == 'rick']
 df_dict['rick'] = df_rick
 
 
-# parse dataframes into appropriate dfs and return to dict
+
 array_dict = {}
 
+# create df for each annotator and total dataset with overlapping cells removed for each
 for key in df_dict:
     try:
         d = parse_dataFrame(df_dict[key], key)
@@ -278,7 +306,7 @@ for key in df_dict:
         print e
 
 
-
+# create hickle for each dataframe
 for key in array_dict:
     try:
         create_hickle(array_dict[key], key)
