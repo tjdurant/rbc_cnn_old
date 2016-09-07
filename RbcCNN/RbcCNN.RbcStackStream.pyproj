@@ -22,6 +22,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Evaluation.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="HickleGen.py" />
     <Compile Include="RbcCNN.CsvParser.py">
       <SubType>Code</SubType>

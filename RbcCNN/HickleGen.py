@@ -20,6 +20,8 @@ CSV_DIR = DATA_DIR + 'csv/'
 # Set IMAGE directory: Keep off of GitHub
 IMG_DIR = 'C:/Users/thoma/Documents/00GitHub/00_LOCAL_ONLY/00RbcCNN_Sln_Images/'
 
+hickle_date = "September_1"
+
 # currently not being used. 
 def overlap_cell_check(df, cell, second_cell):
     
@@ -143,16 +145,20 @@ def get_cropped_array(ind, dataframe, im):
     df = dataframe.ix[ind]
     label = df.label
     
-    new_x = df.x - 30
-    new_y = df.y - 30
-    new_w = 60
-    new_h = 60
+    uid = df.pk
+
+    new_x = df.x - 35
+    new_y = df.y - 35
+    new_w = 70
+    new_h = 70
 
     croppedCell = im[new_y:new_y+new_h, new_x:new_x+new_w]
 
-    if croppedCell.shape == (60, 60, 3):
-        return croppedCell, label
-
+    try:
+        if croppedCell.shape == (70, 70, 3):
+            return croppedCell, label, uid
+    except Exception, e:
+        print e
 
 def create_hickle(dataframe, hickle_name):
     """
@@ -167,7 +173,8 @@ def create_hickle(dataframe, hickle_name):
 
     X = []
     Y = []
-    IDs = []
+    jpg = []
+    pk = []
 
     # iterates over image column of dataframe
     for n in dataframe.image.iteritems():
@@ -177,29 +184,32 @@ def create_hickle(dataframe, hickle_name):
         
         # n[0] = index
         index = n[0]
-        
-        # get smear image array      
+        imgName = n[1].replace (" ", "_")
+        imgPath = IMG_DIR + imgName
+        imgPath
+
+        # get smear image array
         if n[1].endswith('.jpg'):
-            im = cv2.imread(IMG_DIR + n[1])
+            im = cv2.imread(imgPath)        
         else:
             im_name = n[1] + '.jpg'
             im_path = IMG_DIR + im_name
             im = cv2.imread(im_path)
         im
-        n[1]
         try:
             # pass index, dataframe, and image array to function
-            x, y = get_cropped_array(index, dataframe, im)
+            x, y, uid = get_cropped_array(index, dataframe, im)
         except Exception, e:
             #type, value, tb = sys.exc_info()
             #traceback.print_exc()
-            print e
+            print e, n[1]
             continue
 
         # append getData value to list
         X.append(x)
         Y.append(y)
-        IDs.append(n)
+        jpg.append(n)
+        pk.append(uid)
 
         # add 1 to iteration counter
         i += 1
@@ -214,7 +224,10 @@ def create_hickle(dataframe, hickle_name):
             npY = np.array(Y)
 
             # individual cell associated smear files
-            npIDs = np.array(IDs)
+            npJPG = np.array(jpg)
+
+            # individual unique ID of each cell
+            npPK = np.array(pk)
 
             hickleCount += 1
              
@@ -222,8 +235,10 @@ def create_hickle(dataframe, hickle_name):
             X = []
             # reset label array
             Y = []
-            # reset IDs
-            IDs = []
+            # reset jpgs
+            jpg = []
+            # reset pk
+            pk = []
 
         elif i >= 600:
     
@@ -235,9 +250,13 @@ def create_hickle(dataframe, hickle_name):
             Y = np.array(Y)
             npY = np.concatenate((npY, Y))
 
-            # IDs: concatenates lists to np.arrays
-            IDs = np.array(IDs)
-            npIDs = np.concatenate((npIDs, IDs))
+            # jpg: concatenates lists to np.arrays
+            jpg = np.array(jpg)
+            npJPG = np.concatenate((npJPG, jpg))
+
+            # pk: concatenates lists to np.arrays
+            pk = np.array(pk)
+            npPK = np.concatenate((npPK, pk))
 
             hickleCount += 1
              
@@ -245,9 +264,11 @@ def create_hickle(dataframe, hickle_name):
             X = []
             # reset label array
             Y = []
-            # reset IDs
-            IDs = []
-            
+            # reset jpg
+            jpg = []
+            # reset pk
+            pk = []
+
             i = 301
 
     
@@ -265,20 +286,29 @@ def create_hickle(dataframe, hickle_name):
     except:
         npY = np.array(Y)
 
-    # IDs: concatenates lists to np.arrays
+    # jpg: concatenates lists to np.arrays
     try:
-        IDs = np.array(IDs)
-        npIDs = np.concatenate((npIDs, IDs))
+        jpg = np.array(jpg)
+        npJPG = np.concatenate((npJPG, jpg))
     except:
-        npIDs = np.array(IDs)
+        npJPG = np.array(jpg)
 
+    # pk: concatenates lists to np.arrays
+    try:
+        pk = np.array(pk)
+        npPK = np.concatenate((npPK, pk))
+    except:
+        npPK = np.array(pk)
+        
     # create dictionary for arrays
     d = {}
     d['X'] = npX
     d['y'] = npY
+    d['z'] = npJPG
+    d['pk'] = npPK
 
     # (X, Y) -- ((N,3,w,h), label)
-    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/April_{}.hkl'.format(hickle_name),'w'))
+    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/{}_{}.hkl'.format(hickle_date, hickle_name),'w'))
 
 
 # return df from all csv files in CSV_DIR
@@ -291,7 +321,6 @@ df_tommy = df[df.annotator == 'tommy']
 df_dict['tommy'] = df_tommy
 df_rick = df[df.annotator == 'rick']
 df_dict['rick'] = df_rick
-
 
 
 array_dict = {}
