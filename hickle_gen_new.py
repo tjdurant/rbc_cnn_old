@@ -2,11 +2,10 @@ import os
 import numpy as np
 import pandas as pd
 import hickle
-import cv2
-import PIL
+# import cv2
 import time
 
-from PIL import Image
+# from PIL import Image
 
 # http://stackoverflow.com/questions/15514593/importerror-no-module-named-when-trying-to-run-python-script
 import sys
@@ -22,7 +21,7 @@ DATA_DIR =  WORK_DIR + 'data/'
 # Set IMAGE directory: Keep off of GitHub
 IMG_DIR = 'C:/Users/thoma/Documents/00GitHub/00_LOCAL_ONLY/00RbcCNN_Sln_Images/'
 
-hickle_date = "October_14_old"
+hickle_date = "October_21_new"
 
 
 def csv_to_dataFrame(path):
@@ -54,66 +53,74 @@ def csv_to_dataFrame(path):
 
         # concat dfs in list 
         frame = pd.concat(list_)
-
-    # BUG: fix error message to say, IOfile not found 
     frame = frame.reset_index(drop=True)
     return frame
 
 
-def parse_dataFrame(df, df_name):
+
+def remove_overlaps(df):
     """
-    removes overlapping cells by x, y, and source image. 
-    """
-
-    x = np.array(df['x'])
-    y = np.array(df['y'])
-    i = np.array(df['image'])
-
-    # create linkage table 
-    dx = x[:, np.newaxis] - x
-    dy = y[:, np.newaxis] - y
-    di = (i[:, np.newaxis] != i)*1e9
-
-    # set diagonal of linkage table to large number
-    dx[np.diag_indices(len(dx))] = 1e9
-    dy[np.diag_indices(len(dy))] = 1e9
-    di[np.diag_indices(len(di))] = 1e9
-
-    # get absolute values
-    dx = np.abs(dx)
-    dy = np.abs(dy)
-
-    # sum vector of x, y, and image
-    d = dx + dy + di
-
-    # set variable = to min of 0 for vector summation
-    b = d.min(0)
-
-    # create array with zeros of length b 
-    exclude = np.zeros(len(b))
-
-    # iterate through index of length b 
-    for i in range(len(b)):
-        # if True/anything present at exclude[i]; skip
-        if exclude[i]:
-            continue
-            # add True to index position of exclude if d[i] < 30     
-        exclude[(d[i] < 20).nonzero()] = True
-        
-     
-    d = {}
-
-    # create overlap frame
-    df_overlap = df[exclude == True]
-    df_overlap = df_overlap.reset_index(drop=True)
+    removes overlapping cells by x, y, and source image. returns a dictionary
+    """    
+    dic = {} 
     
+    df_dict = {}
+    df_dict['total'] = df
+    df_tommy = df[df.annotator == 'tommy']
+    df_dict['tommy'] = df_tommy
+    df_rick = df[df.annotator == 'rick']
+    df_dict['rick'] = df_rick
+    
+    for key in df_dict:
+        
+        df = df_dict[key]
+        
+        x = np.array(df['x'])
+        y = np.array(df['y'])
+        i = np.array(df['image'])
 
-    # create non_overlap frame
-    df_nonoverlap = df[exclude == False]
-    df_nonoverlap = df_nonoverlap.reset_index(drop=True)
-    d['{}_non_overlap'.format(df_name)] = df_nonoverlap
+        # create linkage table 
+        dx = x[:, np.newaxis] - x
+        dy = y[:, np.newaxis] - y
+        di = (i[:, np.newaxis] != i)*1e9
 
-    return d
+        # set diagonal of linkage table to large number
+        dx[np.diag_indices(len(dx))] = 1e9
+        dy[np.diag_indices(len(dy))] = 1e9
+        di[np.diag_indices(len(di))] = 1e9
+
+        # get absolute values
+        dx = np.abs(dx)
+        dy = np.abs(dy)
+
+        # sum vector of x, y, and image
+        d = dx + dy + di
+
+        # set variable = to min of 0 for vector summation
+        b = d.min(0)
+
+        # create array with zeros of length b 
+        exclude = np.zeros(len(b))
+
+        # iterate through index of length b 
+        for i in range(len(b)):
+            # if True/anything present at exclude[i]; skip
+            if exclude[i]:
+                continue
+                # add True to index position of exclude if d[i] < 30     
+            exclude[(d[i] < 20).nonzero()] = True
+        
+
+        # create overlap frame
+        df_overlap = df[exclude == True]
+        df_overlap = df_overlap.reset_index(drop=True)
+
+        # create non_overlap frame
+        df_nonoverlap = df[exclude == False]
+        df_nonoverlap = df_nonoverlap.reset_index(drop=True)
+        dic['{}_non_overlap'.format(key)] = df_nonoverlap
+
+    return dic
 
 
 def get_cropped_array(ind, dataframe, im):
@@ -292,34 +299,16 @@ def create_hickle(dataframe, hickle_name):
     hickle.dump(d, open(hickle_path, 'w'))
 
 
-# return df from all csv files in CSV_DIR
-df_dict = {}
-
 # read all csv cell 
 df = csv_to_dataFrame(CSV_DIR)
-df_dict['total'] = df
-df_tommy = df[df.annotator == 'tommy']
-df_dict['tommy'] = df_tommy
-df_rick = df[df.annotator == 'rick']
-df_dict['rick'] = df_rick
 
-
-array_dict = {}
-
-# create df for each annotator and total dataset with overlapping cells removed for each
-for key in df_dict:
-    try:
-        d = parse_dataFrame(df_dict[key], key)
-        for k in d:
-            array_dict[k] = d[k]
-    except Exception, e:
-        print e
-
+# remove overlap cells
+non_overlap_dic = remove_overlaps(df)
 
 # create hickle for each dataframe
-for key in array_dict:
+for key in non_overlap_dic:
     try:
-        create_hickle(array_dict[key], key)
+        create_hickle(non_overlap_dic[key], key)
     except Exception, e:
         print e
 

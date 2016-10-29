@@ -26,6 +26,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="HickleGen.py" />
+    <Compile Include="hickle_gen_new.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="RbcCNN.CsvParser.py">
       <SubType>Code</SubType>
     </Compile>
