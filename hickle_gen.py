@@ -14,37 +14,15 @@ sys.path.append('C:/Anaconda/Lib/site-packages')
 
 
 # Set DATA directory
-DATA_DIR = 'C:/Users/thoma/Documents/00GitHub/rbc_cnn/'
-CSV_DIR = DATA_DIR + 'csv/'
+
+WORK_DIR = 'C:\\Users\\thoma\\Documents\\00GitHub\\01_rbc_cnn\\rbc_cnn_old\\'
+CSV_DIR = WORK_DIR + 'csv/'
+DATA_DIR =  WORK_DIR + 'data/'
 
 # Set IMAGE directory: Keep off of GitHub
 IMG_DIR = 'C:/Users/thoma/Documents/00GitHub/00_LOCAL_ONLY/00RbcCNN_Sln_Images/'
 
-hickle_date = "September_1"
-
-# currently not being used. 
-def overlap_cell_check(df, cell, second_cell):
-    
-    overlap_list = []
-
-    # absolute < 30 
-    if cell.x in range(second_cell.x-30, second_cell.x+30):
-        if cell.y in range(second_cell.y-30, second_cell.y+30):
-            if cell.image == second_cell.image:
-                if cell.annotator != second_cell.annotator:
-                    overlap_list.append(cell)
-                    overlap_list.append(second_cell)
-                    return overlap_list
-                else:
-                    return None
-            else:
-                return None
-        else:
-            return None
-    else:
-        return None
-
-    return 
+hickle_date = "October_14_old"
 
 
 def csv_to_dataFrame(path):
@@ -76,6 +54,8 @@ def csv_to_dataFrame(path):
 
         # concat dfs in list 
         frame = pd.concat(list_)
+
+    # BUG: fix error message to say, IOfile not found 
     frame = frame.reset_index(drop=True)
     return frame
 
@@ -308,7 +288,8 @@ def create_hickle(dataframe, hickle_name):
     d['pk'] = npPK
 
     # (X, Y) -- ((N,3,w,h), label)
-    hickle.dump(d, open('C:/Users/thoma/Documents/00GitHub/rbc_cnn/data/{}_{}.hkl'.format(hickle_date, hickle_name),'w'))
+    hickle_path = DATA_DIR + '{}_{}.hkl'.format(hickle_date, hickle_name)
+    hickle.dump(d, open(hickle_path, 'w'))
 
 
 # return df from all csv files in CSV_DIR
